@@ -1,3 +1,3 @@
 # LeeTCode Recording
 
--[] hot100
+- [ ] hot100
