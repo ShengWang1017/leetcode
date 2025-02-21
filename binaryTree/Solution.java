@@ -204,7 +204,61 @@ public class Solution {
         return res;
     }
 
+    /**
+     * 114. 二叉树展开为链表
+     */
+    List<TreeNode> nodeList;
+    public void flatten(TreeNode root) {
+        nodeList = new ArrayList<>();
+        preOrder(root);
+        nodeList.add(null);
+        TreeNode pre = new TreeNode(-1);
+        for (TreeNode treeNode : nodeList) {
+            pre.right = treeNode;
+            pre.left = null;
+            pre = treeNode;
+        }
+    }
+    public void preOrder(TreeNode root) {
+        if (root == null) return;
+
+        nodeList.add(root);
+        preOrder(root.left);
+        preOrder(root.right);
+    }
 
 
+    /**
+     * 105. 从前序与中序遍历序列构造二叉树
+     * @param preorder
+     * @param inorder
+     * @return
+     */
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+        List<Integer> preList = new ArrayList<>();
+        List<Integer> inList = new ArrayList<>();
+        for (int i : preorder) {
+            preList.add(i);
+        }
+        for (int i : inorder) {
+            inList.add(i);
+        }
+        return lc105Helper(preList, inList, 0, preList.size() - 1);
+    }
+
+    public TreeNode lc105Helper(List<Integer> preorder, List<Integer> inorder , int l ,int r) {//l and r 是为了确定每次递归，当前子树所在的范围
+        //终止条件
+        if (l>r) return null;
+        int rootVal = preorder.get(l);
+        TreeNode root = new TreeNode(rootVal);  //pre的0索引处，就是新的根节点
+        int rootIndex = inorder.indexOf(rootVal);
+        //递归出，再分为左子树，右子树的区间
+        TreeNode left = lc105Helper(preorder, inorder, l, rootIndex - 1);
+        TreeNode right = lc105Helper(preorder, inorder, rootIndex + 1, r);
+        root.left = left;
+        root.right = right;
+        return root;
+
+    }
 
 }

@@ -1,3 +1,3 @@
-# LeeTCode Recording
+# LeetCode Recording
 
 - [ ] hot100
