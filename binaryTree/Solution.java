@@ -234,6 +234,7 @@ public class Solution {
      * @param inorder
      * @return
      */
+    HashMap<Integer,TreeNode> treeRes;
     public TreeNode buildTree(int[] preorder, int[] inorder) {
         List<Integer> preList = new ArrayList<>();
         List<Integer> inList = new ArrayList<>();
@@ -243,22 +244,126 @@ public class Solution {
         for (int i : inorder) {
             inList.add(i);
         }
+        treeRes = new HashMap<>();
         return lc105Helper(preList, inList, 0, preList.size() - 1);
     }
 
     public TreeNode lc105Helper(List<Integer> preorder, List<Integer> inorder , int l ,int r) {//l and r 是为了确定每次递归，当前子树所在的范围
         //终止条件
         if (l>r) return null;
-        int rootVal = preorder.get(l);
-        TreeNode root = new TreeNode(rootVal);  //pre的0索引处，就是新的根节点
-        int rootIndex = inorder.indexOf(rootVal);
+//        int rootVal = preorder.get(l);
+        treeRes.put(preorder.get(l),new TreeNode(preorder.get(l)));  //pre的0索引处，就是新的根节点
+        int rootIndex = inorder.indexOf(preorder.get(l));
         //递归出，再分为左子树，右子树的区间
         TreeNode left = lc105Helper(preorder, inorder, l, rootIndex - 1);
         TreeNode right = lc105Helper(preorder, inorder, rootIndex + 1, r);
-        root.left = left;
-        root.right = right;
-        return root;
+        treeRes.get(preorder.get(l)).left = left;
+        treeRes.get(preorder.get(l)).right = right;
+        return treeRes.get(preorder.get(l));
 
     }
 
+    /**
+     * 437. 路径总和 III
+     * @param root
+     * @param targetSum
+     * @return
+     */
+/*    public int pathSum(TreeNode root, long targetSum) {
+        if (root==null) return 0;
+        int paths =rootSum(root,targetSum);
+        paths += pathSum(root.left, targetSum);
+        paths += pathSum(root.right, targetSum);
+        return paths;
+    }
+    //返回总共有多少个线路ways,表示根root为起点的路径
+    public int rootSum(TreeNode root, long target) {
+        if (root==null) return 0;
+        int way = 0;
+
+        long val = root.val;
+        if (val==target) way++;
+
+        way+= rootSum(root.left,target - val);
+        way += rootSum(root.right, target - val);
+        return way;
+    }*/
+
+    /**
+     * 437. 路径总和 III
+     * @param root
+     * @param targetSum
+     * @return
+     */
+    public int pathSum(TreeNode root, long targetSum) {
+        Map<Long, Integer> preSumMap = new HashMap<>();
+        preSumMap.put(0L, 1);   //!!!初始时要有前缀和为0，防止后续从root出发的前缀和等于target时，不能正确计数；
+        return dfs(root, preSumMap, targetSum, 0);  //一开始前缀就是0？
+    }
+
+    //返回有多少条路径
+    public int dfs(TreeNode root, Map<Long, Integer> preSum, long targetSum, long currentSum) {
+        if (root==null) return 0;
+
+        currentSum+=root.val;
+        int ways = 0;
+        if (preSum.containsKey(currentSum-targetSum)){
+            // 这里不是ways++，因为可能已经存在很多条
+            ways += preSum.get(currentSum - targetSum);
+        }
+
+        preSum.put(currentSum, preSum.getOrDefault(currentSum,0) + 1);
+        ways += dfs(root.left, preSum, targetSum, currentSum);
+        ways += dfs(root.right, preSum, targetSum, currentSum);
+
+        //!!!回溯，将map中的当前减去
+        preSum.put(currentSum, preSum.get(currentSum) - 1);
+        if (preSum.get(currentSum)==0) preSum.remove(currentSum);
+
+        return ways;
+
+    }
+
+    TreeNode res ;
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        findPQ(root, p, q);
+        return res;
+    }
+    public int findPQ(TreeNode root,TreeNode p , TreeNode q) {
+        if (root==null) return 0;
+        int visitedNode = 0;
+        if (root==p||root==q) visitedNode++;
+        visitedNode+= findPQ(root.left, p, q);
+        visitedNode += findPQ(root.right, p, q);
+        if (visitedNode == 2) {
+            res = root;
+            visitedNode++;//避免最近祖父节点更远的节点，成为结果返回，找到该节点之后，所有其他的节点都不可能是了。
+        }
+        return visitedNode;
+    }
+
+    int maxPathSum = Integer.MIN_VALUE;
+    public int maxPathSum(TreeNode root) {
+        maxGain(root);
+        return maxPathSum;
+    }
+
+    public int maxGain(TreeNode root) {
+        if (root==null) return 0;
+        int currentPathSum =root.val;
+
+        int leftCore = maxGain(root.left);
+        int rightCore = maxGain(root.right);
+        //两边贡献值都小于0,当前节点值就是最大贡献值
+        if (leftCore <= 0 && rightCore <= 0) {
+            maxPathSum = Math.max(maxPathSum, currentPathSum);
+            return root.val;
+        }
+        if (leftCore>0) currentPathSum+=leftCore;
+        if (rightCore>0) currentPathSum += rightCore;
+        //更新 maxPathSum
+        maxPathSum = Math.max(maxPathSum, currentPathSum);
+
+        return Math.max(leftCore,rightCore)+root.val;
+    }
 }
